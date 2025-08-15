@@ -1,0 +1,8 @@
+
+baseURL = "https://example.com/"
+languageCode = "en-us"
+title = "My New Hugo Site"
+theme = "hugo-xmin"
+
+[markup.highlight]
+  style = 'manni' # 样式参考 https://swapoff.org/chroma/playground
