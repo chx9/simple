@@ -21,7 +21,17 @@ hr {
   border-style: dashed;
   color: #ddd;
 }
-
+h1 {
+  position: relative;
+  padding-bottom: 0.1em; /* 给横线留点间距 */
+  margin-bottom: 0.1em;    /* 让下面内容和标题保持距离 */
+  border-bottom: 2px solid #000000ff; /* 横线，颜色和粗细可调 */
+}
+body > div > h1:first-of-type {
+  border-top: none;
+  border-bottom: none;
+  padding: 0.5em 0; /* 保持文字与上下元素间距 */
+}
 /* code */
 pre {
   border: 1px solid #ddd;
