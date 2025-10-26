@@ -28,7 +28,7 @@ redis 从 3.0 版本起支持集群模式，在该模式下，数据被分散存
 - **高可用**：一个主节点往往会挂有 1 个到多个从节点，当主节点宕机时从节点会被选举成为主节点。当主节点下从节点全部不可用时，redis 的副本漂移机制会从有多个从节点的主节点中拿到一个从节点，保证数据的安全性。
 - 可扩展：可增加分片和从节点数量，最多可以扩展到 1000 个节点。
 
-![Redis cluster and sentinel with docker-From Zero to Hero -part III | by  ChickenBenny | DevOps.dev](https://miro.medium.com/v2/resize:fit:1400/1*L7OkvJ5U-IWQmeDUe1t6wg.png)
+![Redis cluster and sentinel with docker-From Zero to Hero -part III | by  ChickenBenny | DevOps.dev](https://p9-xtjj-sign.byteimg.com/tos-cn-i-73owjymdk6/3657e0c925b04f069ee3922f0682da83~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgaW1jaHg5:q75.awebp?rk3s=f64ab15b&x-expires=1762094684&x-signature=s2J763TwT32YXTkHk%2BsT3oJdsO8%3D)
 
 上图中就是一个规格为 3 主 6 从的redis 集群，一个主节点和其从节点组成一个分片，在图中 Master A 和 Replica A1、Replica A2 为一个分片，Replica A1 和 A2 异步复制 master A 的数据确保高可用；master A、B、C 分别管理0-5460、5461 - 10922 、 10923 - 16383 的 slots。
 
@@ -110,7 +110,7 @@ cluster meet 的过程
 
 redis 除了和客户端通信的 RESP 协议以外，还定义了一个集群间通信的 gossip 协议，该协议使用集群通信端口，只用于节点和节点之间的通信。
 
-![Understanding the Failover Mechanism of Redis Cluster | by Alibaba Cloud |  Medium](https://miro.medium.com/0*fONf9qdXjpC-b444.png)
+![Understanding the Failover Mechanism of Redis Cluster | by Alibaba Cloud |  Medium](https://p9-xtjj-sign.byteimg.com/tos-cn-i-73owjymdk6/1c136c5da6df4e26947971ca62463a95~tplv-73owjymdk6-jj-mark-v1:0:0:0:0:5o6Y6YeR5oqA5pyv56S-5Yy6IEAgaW1jaHg5:q75.awebp?rk3s=f64ab15b&x-expires=1762094684&x-signature=xTOfEbaOGiGnQEH0g%2B7rMp16ldo%3D)
 
 gossip 协议把网络上所有节点都视为平等而普通的一员，没有中心化节点或者主节点的概念。这些特点使得其具有极强的鲁棒性和可扩展性
 
