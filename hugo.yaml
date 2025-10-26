@@ -29,7 +29,7 @@ menu:
       url: "index.xml"
 params:
   description: "A website built through Hugo and blogdown."
-  footer: "&copy; chx9 -- {Year} | [Github](https://github.com/chx0)"
+  footer: "&copy; chx9 -- {Year} | [Github](https://github.com/chx9)"
 
 markup:
   highlight:
