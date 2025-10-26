@@ -1,7 +1,8 @@
 body {
-  font-family: Optima, Candara, Calibri, Arial, sans-serif;
+  font-family: Consolas, "Courier New", monospace;
 }
-code {
-  font-family: "Lucida Console", Monaco, monospace;
-  font-size: 85%;
+
+code, pre {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 100%;
 }

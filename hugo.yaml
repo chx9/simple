@@ -1,6 +1,6 @@
 baseurl: "https://example.org/"  # please update this to your actual URL
 languageCode: "en-us"
-title: "A minimal Hugo website"
+title: "chx9"
 theme: "hugo-xmin"
 googleAnalytics: ""
 disqusShortname: ""
@@ -32,9 +32,13 @@ params:
   footer: "&copy; chx9 -- {Year} | [Github](https://github.com/chx9)"
 
 markup:
+  tableOfContents:
+    startLevel: 1
+    endLevel: 6
+    ordered: false
   highlight:
     codeFences: true
-    style : 'manni' # https://swapoff.org/chroma/playground
+    style : 'tango' # https://swapoff.org/chroma/playground
   goldmark:
     renderer:
       unsafe: true
@@ -50,9 +54,3 @@ markup:
           inline:
           - - \(
             - \)
-
-markup:
-  tableOfContents:
-    startLevel: 1
-    endLevel: 6
-    ordered: false
