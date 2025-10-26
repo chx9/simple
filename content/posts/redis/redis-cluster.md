@@ -311,3 +311,5 @@ failover 可以是手动，通过向从节点发送 `cluster failover`命令可�
 
 - cluster failover force：正常情况下从节点在 failover 前需要和当前**主节点数据偏移量保持一致**，force 直接跳过这一步。
 - cluster failover takeover：更加暴力形式，完全不需要和主节点进行通信，直接接管。
+
+this is a update
