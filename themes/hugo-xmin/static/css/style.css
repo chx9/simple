@@ -27,6 +27,39 @@ h1 {
   margin-bottom: 0.1em;    /* 让下面内容和标题保持距离 */
   border-bottom: 2px solid #000000ff; /* 横线，颜色和粗细可调 */
 }
+/* --- 保留你原有的 h1 样式，不修改 --- */
+
+/* 以下是 h2～h6 的 Bookmark 图标样式 */
+h2, h3, h4, h5, h6 {
+  position: relative;
+  padding-left: 1.6em; /* 留出图标空间 */
+  line-height: 1.3;
+}
+
+/* 通用图标样式（使用 SVG Data URI） */
+h2::before,
+h3::before,
+h4::before,
+h5::before,
+h6::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.1em;
+  width: 1em;   /* 基础尺寸，会按标题层级缩小 */
+  height: 1.2em;
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: contain;
+  /* SVG: 窄版 bookmark，透明填充，颜色自动跟随当前文字色 */
+background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 30' fill='gray' stroke='gray' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'>\
+<path d='M3 2h12a1.8 1.8 0 0 1 1.8 1.8v20.4l-7.8-4.8-7.8 4.8V3.8A1.8 1.8 0 0 1 3 2z'/>\
+</svg>");
+
+}
+
+
 body > div > h1:first-of-type {
   border-top: none;
   border-bottom: none;
