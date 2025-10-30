@@ -302,8 +302,73 @@ typedef struct {
 
 ##### 主从协商
 
-1. slave 向其 master 发送CLUSTERMSG_TYPE_MFSTART 请求
-2. master 收到请求
+1. slave 向其 master 发送`CLUSTERMSG_TYPE_MFSTART` 请求
+
+2. master 收到请求后暂停 client服务，不处理写请求，时间为（`CLUSTER_MF_TIMEOUT`*2）
+
+3. master记录发起投票节点（server->mf_slave），并在后续每次clusterCron中持续不断的向该节点发送`CLUSTERMSG_TYPE_PING`消息（携带repl_offset）；
+
+4. 发起投票节点不断接受 ping 消息，更新 mf_ master_offset，如果和本地同步进度相等则将 mf_can_start 设置为 1
+
+5. 发起投票节点和 master 都在 cron 任务中判断manual_failover 是否超时（`CLUSTER_MF_TIMEOUT`）
+#### slave发起投票
+在clusterHandleSlaveFailover中 slave 发起投票
+1. 投票前提： 发起投票节点为 slave，master 为fail状态或者本次为 manual failover且 master slots 不为 0
+2. 发起投票节点判断数据是否有效 server.cluster_slave_validity_factor && data_age<(((mstime_t)server.repl_ping_slave_period * 1000) +(server.cluster_node_timeout * server.cluster_slave_validity_factor)))
+3. 若本次投票超过 CLUSTER_MF_TIMEOUT*4，重置后广播`CLUSTER_BROADCAST_LOCAL_SLAVES` 并设置下次触发投票时间
+4. 自动 failover 根据 slave 同步进度选择是否延期发起投票
+5. currentEpoch++后设置 failover_auth_epoch 并广播发起投票，类型为`CLUSTERMSG_TYPE_FAILOVER_AUTH_REQUEST`
+6. currentEpoch++后赋值给 failover_auth_epoch 并通过`clusterRequestFailoverAuth`广播`CLUSTERMSG_TYPE_FAILOVER_AUTH_REQUEST`以发起投票
+
+#### masters 投票
+
+某个master（receiver） 收到了`CLUSTERMSG_TYPE_FAILOVER_AUTH_REQUEST`之后会决定是否投给发送者(sender)一票，位于函数`clusterSendFailoverAuthIfNeeded`
+
+条件有：
+
+1. receiver为 master，且持有 slots（有投票权）
+2. sender 是已知 slave节点，且 master非空
+3. sender 发送的请求中的 currentEpoch大于receiver的 currentEpoch
+4. receiver 的 lastVoteEpoch 不等于 receiver 的 currentEpoch，lastVoteEpoch 就是上次投票 sender 的 currentEpoch
+5. sender master 为 fail 或者此次为 manual failover
+6. 对同一个分片内的 slave 节点，在2 * `CLUSTER_MF_TIMEOUT`时间内不做二次投票
+7. sender的configEpoch必须大于其所想要接管的slot在receiver认知中configEpoch（server.cluster->slots[j]->configEpoch <= requestConfigEpoch）
+
+#### slave统计票数
+
+slave （receiver）将会收到master （sender）发送的CLUSTERMSG_TYPE_FAILOVER_AUTH_ACK，他也会 sender master，需要通过以下几个判断才能验收票数
+
+1. sender 是已知节点
+2. sender 是 master
+3. sender 负责了 slots
+4. sender 的 currentEpoch >= server.failover_auth_epoch
+
+slave 在后续clusterHandleSlaveFailover 判断是否已经拿到了足够的票数，在该函数中仍然需要经过一下判断，和 slave 投票环节的前置检查相同
+
+1. 该节点为 slave，master 为fail状态或者本次为 manual failover且 master slots 不为 0
+1. 该节点判断数据是否有效 server.cluster_slave_validity_factor && data_age<(((mstime_t)server.repl_ping_slave_period * 1000) +(server.cluster_node_timeout * server.cluster_slave_validity_factor)))
+1. 若本次投票超过 CLUSTER_MF_TIMEOUT*4，重置后广播`CLUSTER_BROADCAST_LOCAL_SLAVES` 并设置下次触发投票时间
+
+进入投票统计阶段，若 failover_ auth_count 超过半数 master，则成功被选举成新 master，节点会做以下动作：
+
+1. 更新 configEpoch 为 fail_auth_epoch
+
+2. 通过`clusterFailoverReplaceYourMaster`正式切成 master
+
+   - 清除自身 slave 相关的标记，从 master的 slaves 中将自己删除
+   - 清除同步状态
+   - 更新 slot
+   - 保存cluster nodes 信息，即 nodes.conf
+   - 广播 pong 消息
+   - 重置 manual failover 状态
+
+   
+
+为什么过期时间设置为cluster-node-timeout\*2? 节点标记成 FAIL 需要cluster-node-timeout\*2
+
+投票下次开始时间为什么设置为cluster-node-timeout*4？ 一次投票最大时长为cluster-node-timeout\*2，两个投票冲突情况下等待 2 次投票都结束，也就是cluster-node-timeout\*2。
+
+failover 失败原因有哪些？ manual failover 情况下，slave 需要首先和 master 对齐同步进度，如果同步进度差距较大，slave 追不上可能会失败，并且虽然 maste 会停止客户端的写请求，然而自身存在的过期也会让导致 slave 追不上 master。
 
 
 
@@ -312,4 +377,3 @@ failover 可以是手动，通过向从节点发送 `cluster failover`命令可�
 - cluster failover force：正常情况下从节点在 failover 前需要和当前**主节点数据偏移量保持一致**，force 直接跳过这一步。
 - cluster failover takeover：更加暴力形式，完全不需要和主节点进行通信，直接接管。
 
-this is a update
